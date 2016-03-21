@@ -1,6 +1,8 @@
 <?php namespace Exolnet\Instruments;
 
-class Instruments
+use League\StatsD\Client;
+
+class Instruments extends Client
 {
 
 }

@@ -1,6 +1,6 @@
 {
 	"name": "exolnet/laravel-instruments",
-	"description": "Module to track Laravel metrics with Statd.",
+	"description": "Module to track Laravel metrics with Statsd.",
 	"license": "MIT",
 	"authors": [
 		{
