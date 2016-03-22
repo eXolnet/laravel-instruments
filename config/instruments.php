@@ -14,10 +14,10 @@ return [
 
 	'application' => null,
 
-	'options' => [
-		'host' => env('INSTRUMENTS_HOST', '127.0.0.1'),
+	'statsd' => [
+		'host' => env('STATSD_HOST', '127.0.0.1'),
 
-		'post' => env('INSTRUMENTS_PORT', 8125),
+		'post' => env('STATSD_PORT', 8125),
 
 		'timeout' => 1,
 

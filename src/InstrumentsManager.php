@@ -38,7 +38,7 @@ class InstrumentsManager extends Manager
 	 */
 	protected function createStatsdDriver()
 	{
-		$options = config('instruments.options') + [
+		$options = config('instruments.statsd') + [
 			'namespace' => $this->getNamespace(),
 		];
 
