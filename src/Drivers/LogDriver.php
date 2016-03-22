@@ -39,7 +39,7 @@ class LogDriver extends Driver
 	 */
 	public function timing($metric, $time)
 	{
-		return $this->send('timing', $metric, $time.' ms');
+		return $this->send('timing', $metric, round(1000 * $time, 4) .' ms');
 	}
 
 	/**

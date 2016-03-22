@@ -28,7 +28,7 @@ abstract class Driver
 	 * Timing
 	 *
 	 * @param  string $metric Metric to track
-	 * @param  float $time Time in milliseconds
+	 * @param  float $time Time in seconds
 	 * @return $this
 	 */
 	abstract public function timing($metric, $time);
@@ -40,12 +40,10 @@ abstract class Driver
 	 */
 	public function time($metric, Closure $callback)
 	{
-		$timer_start = microtime(true);
-		$value = $callback();
-		$timer_end = microtime(true);
-		$time = round(($timer_end - $timer_start) * 1000, 4);
+		$startTime = microtime(true);
+		$value     = $callback();
 
-		$this->timing($metric, $time);
+		$this->timing($metric, microtime(true) - $startTime);
 
 		return $value;
 	}

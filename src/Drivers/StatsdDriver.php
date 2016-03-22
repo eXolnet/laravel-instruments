@@ -61,12 +61,12 @@ class StatsdDriver extends Driver
 	 * Timing
 	 *
 	 * @param  string $metric Metric to track
-	 * @param  float $time Time in milliseconds
+	 * @param  float $time Time in seconds
 	 * @return $this
 	 */
 	public function timing($metric, $time)
 	{
-		$this->client->timing($metric, $time);
+		$this->client->timing($metric, round(1000 * $time, 4));
 
 		return $this;
 	}
