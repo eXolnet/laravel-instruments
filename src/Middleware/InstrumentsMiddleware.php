@@ -9,41 +9,22 @@ class InstrumentsMiddleware
 	/**
 	 * @param \Illuminate\Http\Request $request
 	 * @param \Closure $next
-	 * @return \Illuminate\Http\Response
+	 * @return mixed
 	 * @throws \Exception
 	 */
 	public function handle(Request $request, Closure $next)
 	{
-		// Collect request stats
-		$this->collectRequest($request);
+		/** @var \Exolnet\Instruments\Instruments $instruments */
+		$instruments = app('instruments');
 
 		try {
-			/** @var \Illuminate\Http\Response $response */
-			$response = $next($request);
+			return $instruments->collectResponse($request, function() use ($request, $next) {
+				return $next($request);
+			});
 		} catch (Exception $e) {
-			// Collect exception stats
-			$this->collectException($e);
+			$instruments->collectException($e);
 
 			throw $e;
 		}
-
-		// Collect response stats
-		$this->collectResponse($response);
-
-		return $response;
-	}
-
-	private function collectRequest(Request $request)
-	{
-		// Request HTTP Verb
-	}
-
-	private function collectResponse($response)
-	{
-		// Time, code and size
-	}
-
-	private function collectException($e)
-	{
 	}
 }
