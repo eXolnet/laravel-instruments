@@ -32,7 +32,7 @@ class NullDriver extends Driver
 	 * Timing
 	 *
 	 * @param  string $metric Metric to track
-	 * @param  float $time Time in milliseconds
+	 * @param  float $time Time in seconds
 	 * @return $this
 	 */
 	public function timing($metric, $time)

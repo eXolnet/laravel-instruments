@@ -66,6 +66,7 @@ class StatsdDriver extends Driver
 	 */
 	public function timing($metric, $time)
 	{
+		// We convert time in seconds because this is what the client requires.
 		$this->client->timing($metric, round(1000 * $time, 4));
 
 		return $this;

@@ -34,12 +34,13 @@ class LogDriver extends Driver
 	 * Timing
 	 *
 	 * @param  string $metric Metric to track
-	 * @param  float $time Time in milliseconds
+	 * @param  float $time Time in seconds
 	 * @return $this
 	 */
 	public function timing($metric, $time)
 	{
-		return $this->send('timing', $metric, round(1000 * $time, 4) .' ms');
+		// For readability, we log the time in milliseconds.
+		return $this->send('timing', $metric, round(1000 * $time, 2) .' ms');
 	}
 
 	/**
