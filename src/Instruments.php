@@ -64,8 +64,8 @@ class Instruments
 			if (preg_match('/^(SELECT|UPDATE|DELETE)/i', $query, $match)) {
 				$type  = strtolower($match[1]);
 				$table = $this->extractTableName($query, 'FROM');
-			} elseif (preg_match('/^INSERT/i', $query, $match)) {
-				$type  = 'insert';
+			} elseif (preg_match('/^(INSERT|REPLACE)/i', $query, $match)) {
+				$type  = strtolower($match[1]);
 				$table = $this->extractTableName($query, 'INTO');
 			} else {
 				$type  = 'questions';
