@@ -20,7 +20,7 @@ class InstrumentsManager extends Manager
 			throw new InstrumentsConfigurationException('Instruments needs an application name to works.');
 		}
 
-		return implode('.', ['applications', $application, $server, $environment]);
+		return implode('.', ['applications', $application, $environment, $server]);
 	}
 
 	/**
