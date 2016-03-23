@@ -19,7 +19,7 @@ return [
 
 		'port' => env('STATSD_PORT', 8125),
 
-		'timeout' => 1,
+		'timeout' => null,
 
 		'throwConnectionExceptions' => env('APP_DEBUG'),
 	],
