@@ -17,7 +17,7 @@ return [
 	'statsd' => [
 		'host' => env('STATSD_HOST', '127.0.0.1'),
 
-		'post' => env('STATSD_PORT', 8125),
+		'port' => env('STATSD_PORT', 8125),
 
 		'timeout' => 1,
 
