@@ -1,10 +1,16 @@
 <?php namespace Exolnet\Instruments;
 
+use Auth;
 use Closure;
+use Exception;
 use Exolnet\Instruments\Drivers\Driver;
 use Exolnet\Instruments\Middleware\InstrumentsMiddleware;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Str;
+use Swift_Message;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Instruments
 {
@@ -83,7 +89,7 @@ class Instruments
 	 */
 	protected function extractTableName($query, $afterKeyword)
 	{
-		if ( ! preg_match('/\s+'. preg_quote($afterKeyword) .'\s(\S+)/i', $query, $match)) {
+		if ( ! preg_match('/\s+'. preg_quote($afterKeyword) .'\s(?:\S+\.)?(\S+)/i', $query, $match)) {
 			return 'null';
 		}
 
@@ -95,9 +101,21 @@ class Instruments
 	 */
 	protected function listenMail()
 	{
-		//$this->events->listen('mailer.sending', function($message) {
-			//$this->getInstruments()->increment('mail.sent.sent');
-		//});
+		app('events')->listen('mailer.sending', function(Swift_Message $message) {
+			$this->driver->increment('authentication.mail.sent');
+
+			$recipients = [
+				'to' => count($message->getTo()),
+				'cc' => count($message->getCc()),
+				'bcc' => count($message->getBcc()),
+			];
+
+			foreach ($recipients as $recipient => $recipientCount) {
+				if ($recipientCount > 0) {
+					$this->driver->increment('authentication.mail.recipients.'. $recipient, $recipientCount);
+				}
+			}
+		});
 	}
 
 	/**
@@ -113,6 +131,10 @@ class Instruments
 			$this->driver->increment('authentication.login.succeeded');
 		});
 
+		app('events')->listen('auth.fail', function() {
+			$this->driver->increment('authentication.login.failed');
+		});
+
 		app('events')->listen('auth.logout', function() {
 			$this->driver->increment('authentication.logout.succeeded');
 		});
@@ -122,13 +144,42 @@ class Instruments
 	 * @param \Illuminate\Http\Request $request
 	 * @return string
 	 */
+	public function guessRequestType(Request $request)
+	{
+		$userAgent    = strtolower($request->header('User-Agent'));
+		$contentType  = array_get($request->getAcceptableContentTypes(), 0);
+
+		if (strpos($userAgent, 'googlebot') !== false) {
+			return 'googlebot';
+		} elseif ($request->ajax()) {
+			return 'ajax';
+		} elseif ($request->pjax()) {
+			return 'pjax';
+		} elseif (Str::contains($contentType, ['application/rss+xml', 'application/rdf+xml', 'application/atom+xml'])) {
+			return 'feed';
+		} elseif ($request->wantsJson() || Str::contains($contentType, ['application/xml', 'text/xml'])) {
+			return 'api';
+		} elseif ( ! $request->acceptsHtml()) {
+			return 'other';
+		} elseif (Auth::check()) {
+			return 'user';
+		}
+
+		return 'public';
+	}
+
+	/**
+	 * @param \Illuminate\Http\Request $request
+	 * @return string
+	 */
 	public function getRequestContext(Request $request)
 	{
-		return implode('.', [
+		return preg_replace('/\.{2,}/', '.', trim(implode('.', [
 			$request->getScheme(),
 			strtolower($request->getMethod()),
-			str_replace('/', '.', trim($request->getPathInfo(), '/'))
-		]);
+			$this->guessRequestType($request),
+			str_replace('/', '.', $request->getPathInfo())
+		]), '.'));
 	}
 
 	/**
@@ -140,21 +191,46 @@ class Instruments
 	{
 		$this->collectRequest($request);
 
-		$timeMetric = $this->getRequestContext($request) .'.response_time';
+		// Collect response time
+		$timeMetric = 'response.'. $this->getRequestContext($request) .'.response_time';
 		$response   = $this->driver->time($timeMetric, $responseBuilder);
 
-		// Collect additional data (code and size)
+		// Collect response code
+		$responseCode = $response instanceof Response ? $response->getStatusCode() : 200;
+		$codeMetric   = 'response.'. $this->getRequestContext($request) .'.code.'. $responseCode;
+
+		$this->driver->increment($codeMetric);
 
 		return $response;
 	}
 
+	/**
+	 * @param \Illuminate\Http\Request $request
+	 * @return void
+	 */
 	public function collectRequest(Request $request)
 	{
-		// Collect additional request data
+		$requestMetric = 'request.'. $this->getRequestContext($request) .'.requested';
+		$this->driver->increment($requestMetric);
 	}
 
-	public function collectException($e)
+	/**
+	 * @param \Illuminate\Http\Request $request
+	 * @param \Exception $e
+	 * @return void
+	 */
+	public function collectException(Request $request, Exception $e)
 	{
-		// Collect exception data
+		// Collect status code
+		$responseCode = $e instanceof HttpException ? $e->getStatusCode() : 500;
+		$codeMetric   = 'response.'. $this->getRequestContext($request) .'.code.'. $responseCode;
+
+		$this->driver->increment($codeMetric);
+
+		// Collection exception type
+		$exceptionPath   = str_replace('\\', '.', get_class($e));
+		$exceptionMetric = 'exceptions'. $this->getRequestContext($request) .'.exception.'. $exceptionPath .'thrown';
+
+		$this->driver->increment($exceptionMetric);
 	}
 }

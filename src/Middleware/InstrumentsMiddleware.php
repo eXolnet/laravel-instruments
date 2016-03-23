@@ -22,7 +22,7 @@ class InstrumentsMiddleware
 				return $next($request);
 			});
 		} catch (Exception $e) {
-			$instruments->collectException($e);
+			$instruments->collectException($request, $e);
 
 			throw $e;
 		}
