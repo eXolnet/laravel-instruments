@@ -106,15 +106,15 @@ class Instruments
 	protected function listenAuth()
 	{
 		app('events')->listen('auth.attempt', function() {
-			$this->driver->increment('authentication.login.attempted');
+			$this->driver->increment('authentication.login.attempted.count');
 		});
 
 		app('events')->listen('auth.login', function() {
-			$this->driver->increment('authentication.login.succeeded');
+			$this->driver->increment('authentication.login.succeeded.count');
 		});
 
 		app('events')->listen('auth.logout', function() {
-			$this->driver->increment('authentication.logout.succeeded');
+			$this->driver->increment('authentication.logout.succeeded.count');
 		});
 	}
 
