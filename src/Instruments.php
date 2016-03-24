@@ -180,7 +180,7 @@ class Instruments
 			$request->getScheme(),
 			strtolower($request->getMethod()),
 			$this->guessRequestType($request),
-			'>'. str_replace('/', '>', trim($request->getPathInfo(), '/')),
+			'_'. str_replace('/', '_', trim($request->getPathInfo(), '/')),
 		]);
 	}
 
