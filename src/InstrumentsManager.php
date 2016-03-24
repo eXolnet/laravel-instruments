@@ -12,7 +12,7 @@ class InstrumentsManager extends Manager
 {
 	public function getNamespace()
 	{
-		$application = config('instruments.application') ?: Str::slug(config('app.name', 'unknown'));
+		$application = config('instruments.application') ?: Str::slug(str_replace('.', '-', config('app.name')));
 		$server      = config('instruments.server')      ?: str_replace('.', '_', gethostname() ?: 'unknown');
 		$environment = $this->app->environment();
 
