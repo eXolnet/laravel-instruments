@@ -5,11 +5,6 @@ use Illuminate\Support\ServiceProvider;
 class InstrumentsServiceProvider extends ServiceProvider
 {
 	/**
-	 * @var \Illuminate\Contracts\Events\Dispatcher
-	 */
-	protected $events;
-
-	/**
 	 * Bootstrap the application services.
 	 *
 	 * @return void
