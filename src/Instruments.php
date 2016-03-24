@@ -102,7 +102,7 @@ class Instruments
 	protected function listenMail()
 	{
 		app('events')->listen('mailer.sending', function(Swift_Message $message) {
-			$this->driver->increment('authentication.mail.sent');
+			$this->driver->increment('mail.sent');
 
 			$recipients = [
 				'to' => count($message->getTo()),
@@ -112,7 +112,7 @@ class Instruments
 
 			foreach ($recipients as $recipient => $recipientCount) {
 				if ($recipientCount > 0) {
-					$this->driver->increment('authentication.mail.recipients.'. $recipient, $recipientCount);
+					$this->driver->increment('mail.recipients.'. $recipient, $recipientCount);
 				}
 			}
 		});
