@@ -229,7 +229,7 @@ class Instruments
 
 		// Collection exception type
 		$exceptionPath   = str_replace('\\', '.', get_class($e));
-		$exceptionMetric = 'exceptions'. $this->getRequestContext($request) .'.exception.'. $exceptionPath .'thrown';
+		$exceptionMetric = 'exceptions.'. $this->getRequestContext($request) .'.exception.'. $exceptionPath .'thrown';
 
 		$this->driver->increment($exceptionMetric);
 	}
