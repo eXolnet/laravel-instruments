@@ -102,7 +102,7 @@ class Instruments
 	protected function listenMail()
 	{
 		app('events')->listen('mailer.sending', function(Swift_Message $message) {
-			$this->driver->increment('mail.sent.sent_count');
+			$this->driver->increment('mail.send.count');
 
 			$recipients = [
 				'to' => count($message->getTo()),
@@ -112,7 +112,7 @@ class Instruments
 
 			foreach ($recipients as $recipient => $recipientCount) {
 				if ($recipientCount > 0) {
-					$this->driver->increment('mail.recipients.'. $recipient .'_count', $recipientCount);
+					$this->driver->increment('mail.recipients.'. $recipient .'.count', $recipientCount);
 				}
 			}
 		});
@@ -124,19 +124,19 @@ class Instruments
 	protected function listenAuth()
 	{
 		app('events')->listen('auth.attempt', function() {
-			$this->driver->increment('authentication.login.attempt_count');
+			$this->driver->increment('authentication.login.attempt.count');
 		});
 
 		app('events')->listen('auth.login', function() {
-			$this->driver->increment('authentication.login.success_count');
+			$this->driver->increment('authentication.login.success.count');
 		});
 
 		app('events')->listen('auth.fail', function() {
-			$this->driver->increment('authentication.login.failure_count');
+			$this->driver->increment('authentication.login.fail.count');
 		});
 
 		app('events')->listen('auth.logout', function() {
-			$this->driver->increment('authentication.logout.success_count');
+			$this->driver->increment('authentication.logout.success.count');
 		});
 	}
 
