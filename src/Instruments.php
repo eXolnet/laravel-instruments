@@ -102,7 +102,7 @@ class Instruments
 	protected function listenMail()
 	{
 		app('events')->listen('mailer.sending', function(Swift_Message $message) {
-			$this->driver->increment('mail.sent');
+			$this->driver->increment('mail.sent.sent_count');
 
 			$recipients = [
 				'to' => count($message->getTo()),
@@ -112,7 +112,7 @@ class Instruments
 
 			foreach ($recipients as $recipient => $recipientCount) {
 				if ($recipientCount > 0) {
-					$this->driver->increment('mail.recipients.'. $recipient, $recipientCount);
+					$this->driver->increment('mail.recipients.'. $recipient .'_count', $recipientCount);
 				}
 			}
 		});
@@ -124,19 +124,19 @@ class Instruments
 	protected function listenAuth()
 	{
 		app('events')->listen('auth.attempt', function() {
-			$this->driver->increment('authentication.login.attempted');
+			$this->driver->increment('authentication.login.attempt_count');
 		});
 
 		app('events')->listen('auth.login', function() {
-			$this->driver->increment('authentication.login.succeeded');
+			$this->driver->increment('authentication.login.success_count');
 		});
 
 		app('events')->listen('auth.fail', function() {
-			$this->driver->increment('authentication.login.failed');
+			$this->driver->increment('authentication.login.failure_count');
 		});
 
 		app('events')->listen('auth.logout', function() {
-			$this->driver->increment('authentication.logout.succeeded');
+			$this->driver->increment('authentication.logout.success_count');
 		});
 	}
 
@@ -199,7 +199,7 @@ class Instruments
 
 		// Collect response code
 		$responseCode = $response instanceof Response ? $response->getStatusCode() : 200;
-		$codeMetric   = 'response.'. $this->getRequestContext($request) .'.code.'. $responseCode;
+		$codeMetric   = 'response.'. $this->getRequestContext($request) .'.'. $responseCode .'.count';
 
 		$this->driver->increment($codeMetric);
 
@@ -212,7 +212,7 @@ class Instruments
 	 */
 	public function collectRequest(Request $request)
 	{
-		$requestMetric = 'request.'. $this->getRequestContext($request) .'.requested';
+		$requestMetric = 'request.'. $this->getRequestContext($request) .'.count';
 		$this->driver->increment($requestMetric);
 	}
 
@@ -225,13 +225,13 @@ class Instruments
 	{
 		// Collect status code
 		$responseCode = $e instanceof HttpException ? $e->getStatusCode() : 500;
-		$codeMetric   = 'response.'. $this->getRequestContext($request) .'.code.'. $responseCode;
+		$codeMetric   = 'response.'. $this->getRequestContext($request) .'.'. $responseCode .'.count';
 
 		$this->driver->increment($codeMetric);
 
 		// Collection exception type
-		$exceptionPath   = str_replace('\\', '.', get_class($e));
-		$exceptionMetric = 'exceptions.'. $this->getRequestContext($request) .'.exception.'. $exceptionPath .'thrown';
+		$exceptionPath   = trim(str_replace('\\', '_', get_class($e)), '_');
+		$exceptionMetric = 'exceptions.'. $this->getRequestContext($request) .'.exception.'. $exceptionPath .'.count';
 
 		$this->driver->increment($exceptionMetric);
 	}
