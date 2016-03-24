@@ -12,8 +12,8 @@ class InstrumentsManager extends Manager
 {
 	public function getNamespace()
 	{
-		$application = config('instruments.application') ?: Str::slug(config('app.name'));
-		$server      = config('instruments.server')      ?: str_replace('.', '_', gethostname());
+		$application = config('instruments.application') ?: Str::slug(config('app.name', 'unknown'));
+		$server      = config('instruments.server')      ?: str_replace('.', '_', gethostname() ?: 'unknown');
 		$environment = $this->app->environment();
 
 		if ( ! $application) {

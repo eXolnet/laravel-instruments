@@ -155,6 +155,8 @@ class Instruments
 			return 'ajax';
 		} elseif ($request->pjax()) {
 			return 'pjax';
+		} elseif ($contentType === null) {
+			return 'raw';
 		} elseif (Str::contains($contentType, ['application/rss+xml', 'application/rdf+xml', 'application/atom+xml'])) {
 			return 'feed';
 		} elseif ($request->wantsJson() || Str::contains($contentType, ['application/xml', 'text/xml'])) {
@@ -174,12 +176,12 @@ class Instruments
 	 */
 	public function getRequestContext(Request $request)
 	{
-		return preg_replace('/\.{2,}/', '.', trim(implode('.', [
+		return implode('.', [
 			$request->getScheme(),
 			strtolower($request->getMethod()),
 			$this->guessRequestType($request),
-			str_replace('/', '.', $request->getPathInfo())
-		]), '.'));
+			'>'. str_replace('/', '>', trim($request->getPathInfo(), '/')),
+		]);
 	}
 
 	/**
