@@ -315,7 +315,7 @@ class Instruments
 		$metrics = [
 			'first_byte' => 'responseStart',
 			'ready'      => 'domContentLoadedEventStart',
-			'load'        => 'loadEventEnd',
+			'load'       => 'loadEventStart',
 		];
 
 		foreach ($metrics as $metric => $event) {
