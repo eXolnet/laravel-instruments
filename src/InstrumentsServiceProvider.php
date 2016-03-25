@@ -15,6 +15,18 @@ class InstrumentsServiceProvider extends ServiceProvider
 			__DIR__.'/../config/instruments.php' => config_path('instruments.php'),
 		]);
 
+		$routeConfig = [
+			'namespace' => 'Exolnet\\Instruments\\Controllers',
+			'prefix' => '_private'
+		];
+
+		$this->app['router']->group($routeConfig, function($router) {
+			$router->post('browser/stats', [
+				'uses' => 'BrowserStatsController@store',
+				'as'   => 'instruments.browser.stats.store',
+			]);
+		});
+
 		$this->app['instruments']->boot();
 	}
 
@@ -36,7 +48,7 @@ class InstrumentsServiceProvider extends ServiceProvider
 		});
 
 		$this->app->singleton('instruments', function ($app) {
-			return new Instruments($app['instruments.driver']);
+			return new Instruments($app);
 		});
 	}
 

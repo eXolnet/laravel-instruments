@@ -1,10 +1,12 @@
 <?php namespace Exolnet\Instruments;
 
 use Auth;
+use Cache;
 use Closure;
 use Exception;
 use Exolnet\Instruments\Drivers\Driver;
 use Exolnet\Instruments\Middleware\InstrumentsMiddleware;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,15 +20,20 @@ class Instruments
 	 * @var \Exolnet\Instruments\Drivers\Driver
 	 */
 	private $driver;
+	/**
+	 * @var \Illuminate\Container\Container
+	 */
+	private $app;
 
 	/**
 	 * Instruments constructor.
 	 *
-	 * @param \Exolnet\Instruments\Drivers\Driver $driver
+	 * @param \Illuminate\Container\Container $app
 	 */
-	public function __construct(Driver $driver)
+	public function __construct(Container $app)
 	{
-		$this->driver = $driver;
+		$this->app = $app;
+		$this->driver = $app['instruments.driver'];
 	}
 
 	/**
@@ -46,6 +53,8 @@ class Instruments
 		$this->listenDatabase();
 		$this->listenMail();
 		$this->listenAuth();
+		$this->listenCache();
+		$this->listenQueue();
 	}
 
 	/**
@@ -123,20 +132,68 @@ class Instruments
 	 */
 	protected function listenAuth()
 	{
-		app('events')->listen('auth.attempt', function() {
+		$events = app('events');
+
+		$events->listen('auth.attempt', function() {
 			$this->driver->increment('authentication.login.attempt.count');
 		});
 
-		app('events')->listen('auth.login', function() {
+		$events->listen('auth.login', function() {
 			$this->driver->increment('authentication.login.success.count');
 		});
 
-		app('events')->listen('auth.fail', function() {
+		$events->listen('auth.fail', function() {
 			$this->driver->increment('authentication.login.fail.count');
 		});
 
-		app('events')->listen('auth.logout', function() {
+		$events->listen('auth.logout', function() {
 			$this->driver->increment('authentication.logout.success.count');
+		});
+	}
+
+	/**
+	 * @return void
+	 */
+	protected function listenCache()
+	{
+		$events = app('events');
+
+		$events->listen('cache.write', function($key) {
+			$this->driver->increment('cache.write.'. $this->quotePath($key) .'.count');
+		});
+
+		$events->listen('cache.delete', function($key) {
+			$this->driver->increment('cache.delete.'. $this->quotePath($key) .'.count');
+		});
+
+		$events->listen('cache.hit', function($key) {
+			$this->driver->increment('cache.hit.'. $this->quotePath($key) .'.count');
+		});
+
+		$events->listen('cache.missed', function($key) {
+			$this->driver->increment('cache.missed.'. $this->quotePath($key) .'.count');
+		});
+	}
+
+	/**
+	 * @return void
+	 */
+	protected function listenQueue()
+	{
+		$events = app('events');
+
+		$queueId = $this->quotePath(uniqid());
+
+		$events->listen('illuminate.queue.looping', function() use ($queueId) {
+			$this->driver->increment('queue.worker.'. $queueId .'.loop.count');
+		});
+
+		$events->listen('illuminate.queue.after', function($connection, $job) {
+			$this->driver->increment('queue.job.'. $connection .'.'. $this->quotePath(get_class($job)) .'.success.count');
+		});
+
+		$events->listen('illuminate.queue.failed', function($connection, $job) {
+			$this->driver->increment('queue.job.'. $connection .'.'. $this->quotePath(get_class($job)) .'.fail.count');
 		});
 	}
 
@@ -180,7 +237,7 @@ class Instruments
 			$request->getScheme(),
 			strtolower($request->getMethod()),
 			$this->guessRequestType($request),
-			'_'. str_replace('/', '_', trim($request->getPathInfo(), '/')),
+			'_'. $this->quotePath($request->getPathInfo()),
 		]);
 	}
 
@@ -202,6 +259,14 @@ class Instruments
 		$codeMetric   = 'response.'. $this->getRequestContext($request) .'.'. $responseCode .'.count';
 
 		$this->driver->increment($codeMetric);
+
+		$shouldInjectStatsCollector = $response->headers->has('Content-Type')
+			&& strpos($response->headers->get('Content-Type'), 'html') !== false
+			&& strpos($response->getContent(), '</head>') !== false;
+
+		if ($shouldInjectStatsCollector) {
+			$this->injectStatsCollector($request, $response);
+		}
 
 		return $response;
 	}
@@ -230,9 +295,95 @@ class Instruments
 		$this->driver->increment($codeMetric);
 
 		// Collection exception type
-		$exceptionPath   = trim(str_replace('\\', '_', get_class($e)), '_');
+		$exceptionPath   = $this->quotePath(get_class($e));
 		$exceptionMetric = 'exceptions.'. $this->getRequestContext($request) .'.exception.'. $exceptionPath .'.count';
 
 		$this->driver->increment($exceptionMetric);
+	}
+
+	/**
+	 * @param $requestContext
+	 * @param array $timing
+	 * @return void
+	 */
+	public function collectBrowserStats($requestContext, array $timing)
+	{
+		if ( ! isset($timing['navigationStart'])) {
+			return;
+		}
+
+		$metrics = [
+			'first_byte' => 'responseStart',
+			'ready'      => 'domContentLoadedEventStart',
+			'load'        => 'loadEventEnd',
+		];
+
+		foreach ($metrics as $metric => $event) {
+			if ( ! isset($timing[$event]) || $timing[$event] < $timing['navigationStart']) {
+				continue;
+			}
+
+			$time = ($timing[$event] - $timing['navigationStart']) / 1000;
+			$this->driver->timing('response.' . $requestContext . '.'. $metric .'_time', $time);
+		}
+	}
+
+	/**
+	 * @param \Illuminate\Http\Request $request
+	 * @param \Symfony\Component\HttpFoundation\Response $response
+	 */
+	public function injectStatsCollector(Request $request, Response $response)
+	{
+		$content      = $response->getContent();
+		$headPosition = strpos($content, '</head>');
+
+		if ($headPosition === false) {
+			return;
+		}
+
+		$requestId      = md5(uniqid());
+		$requestContext = $this->getRequestContext($request);
+
+		Cache::put('instruments.requests.'. $requestId, $requestContext, 1);
+
+		$statsCollectorHtml = str_replace(["\n", "\r", "\t"], '', '<script>
+			if(window.addEventListener && window.fetch && window.performance) {
+				window.addEventListener("load", function() {
+					setTimeout(function() {
+						window.fetch("'. route('instruments.browser.stats.store') .'", {
+							method: "post",
+							body: JSON.stringify({
+								requestId: "'. $requestId .'",
+								timing: window.performance.timing
+							}),
+							headers: {
+								"Content-Type": "application/json"
+							}
+						});
+					}, 500);
+				});
+			}
+		</script>');
+
+		// Build the content with our stats collector
+		$content = substr($content, 0, $headPosition) . $statsCollectorHtml . substr($content, $headPosition);
+
+		$response->setContent($content);
+	}
+
+	/**
+	 * @param string $value
+	 * @param bool $trimUnderscores
+	 * @return string
+	 */
+	public function quotePath($value, $trimUnderscores = true)
+	{
+		$value = str_replace(['\\', '/', '.'], '_', $value);
+
+		if ($trimUnderscores) {
+			$value = trim($value, '_');
+		}
+
+		return $value;
 	}
 }
