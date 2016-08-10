@@ -36,7 +36,7 @@ class BrowserStatsController extends Controller
 			throw new NotFoundHttpException;
 		}
 
-		$requestContext = Cache::get('instruments.requests.'. $requestId);
+		$requestContext = Cache::pull('instruments.requests.'. $requestId);
 
 		if ( ! $requestContext) {
 			throw new NotFoundHttpException;
