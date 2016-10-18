@@ -9,6 +9,7 @@ use Exolnet\Instruments\Middleware\InstrumentsMiddleware;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
+use Session;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
 use Swift_Message;
@@ -344,7 +345,10 @@ class Instruments
 		$requestId      = md5(uniqid());
 		$requestContext = $this->getRequestContext($request);
 
-		Cache::put('instruments.requests.'. $requestId, $requestContext, 1);
+		Session::set('instruments.request', [
+			'id'      => $requestId,
+			'context' => $requestContext,
+		]);
 
 		$statsCollectorHtml = str_replace(["\n", "\r", "\t"], '', '<script>
 			if(window.addEventListener && window.fetch && window.performance) {
@@ -358,7 +362,8 @@ class Instruments
 							}),
 							headers: {
 								"Content-Type": "application/json"
-							}
+							},
+							credentials: "same-origin"
 						});
 					}, 500);
 				});

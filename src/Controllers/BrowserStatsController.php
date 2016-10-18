@@ -4,6 +4,7 @@ use Cache;
 use Exolnet\Instruments\Instruments;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Session;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class BrowserStatsController extends Controller
@@ -36,13 +37,15 @@ class BrowserStatsController extends Controller
 			throw new NotFoundHttpException;
 		}
 
-		$requestContext = Cache::pull('instruments.requests.'. $requestId);
+		$sessionRequest = Session::get('instruments.request');
 
-		if ( ! $requestContext) {
+		if ( ! is_array($sessionRequest) || $requestId !== $sessionRequest['id']) {
 			throw new NotFoundHttpException;
 		}
 
-		$this->instruments->collectBrowserStats($requestContext, $timing);
+		Session::remove('instruments.request');
+
+		$this->instruments->collectBrowserStats($sessionRequest['context'], $timing);
 
 		return response()->make();
 	}
