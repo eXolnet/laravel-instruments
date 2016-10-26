@@ -42,4 +42,4 @@ $ vendor/bin/phpunit -c phpunix.xml
 
 ## License
 
-The MIT License (MIT). Please see [License File](/LICENSE.md) for more information.
+This code is licensed under the [MIT license](http://choosealicense.com/licenses/mit/). Please see the [license file](LICENSE) for more information.
