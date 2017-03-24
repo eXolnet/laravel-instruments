@@ -10,19 +10,6 @@ use League\StatsD\Client;
 
 class InstrumentsManager extends Manager
 {
-	public function getNamespace()
-	{
-		$application = config('instruments.application') ?: Str::slug(str_replace('.', '-', config('app.name')));
-		$server      = config('instruments.server')      ?: str_replace('.', '_', gethostname() ?: 'unknown');
-		$environment = $this->app->environment();
-
-		if ( ! $application) {
-			throw new InstrumentsConfigurationException('Instruments needs an application name to works.');
-		}
-
-		return implode('.', ['applications', $application, $environment, $server]);
-	}
-
 	/**
 	 * Get the default driver name.
 	 *
@@ -38,9 +25,7 @@ class InstrumentsManager extends Manager
 	 */
 	protected function createStatsdDriver()
 	{
-		$options = config('instruments.statsd') + [
-			'namespace' => $this->getNamespace(),
-		];
+		$options = config('instruments.statsd');
 
 		$client = new Client();
 		$client->configure($options);

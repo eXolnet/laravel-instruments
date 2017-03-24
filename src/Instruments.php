@@ -1,14 +1,11 @@
 <?php namespace Exolnet\Instruments;
 
-use App;
 use Auth;
-use Cache;
 use Closure;
 use Exception;
-use Exolnet\Instruments\Drivers\Driver;
 use Exolnet\Instruments\Middleware\InstrumentsMiddleware;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Session;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,24 +19,26 @@ class Instruments
 	 * @var \Exolnet\Instruments\Drivers\Driver
 	 */
 	private $driver;
+
 	/**
-	 * @var \Illuminate\Container\Container
+	 * @var \Illuminate\Foundation\Application
 	 */
 	private $app;
 
 	/**
 	 * Instruments constructor.
 	 *
-	 * @param \Illuminate\Container\Container $app
+	 * @param \Illuminate\Foundation\Application $app
 	 */
-	public function __construct(Container $app)
+	public function __construct(Application $app)
 	{
 		$this->app = $app;
 		$this->driver = $app['instruments.driver'];
 
 		$this->driver->tags([
-			'app' => config('instruments.application') ?: Str::slug(config('app.name')),
-			'env' => App::environment(),
+			'application' => config('instruments.application') ?: Str::slug(config('app.name')),
+			'environment' => $this->app->environment(),
+			'server'      => config('instruments.server')      ?: str_replace('.', '_', gethostname() ?: 'unknown'),
 		]);
 	}
 
