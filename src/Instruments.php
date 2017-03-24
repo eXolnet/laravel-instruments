@@ -94,7 +94,7 @@ class Instruments
 				$table = 'null';
 			}
 
-			$this->driver->flashTags(compact('connection', 'table', 'type'))->timing('sql.query_time', $time);
+			$this->driver->flashTags(compact('connection', 'table', 'type'))->timing('app.query_time', $time);
 		});
 	}
 
