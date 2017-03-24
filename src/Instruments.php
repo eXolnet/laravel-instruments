@@ -118,7 +118,7 @@ class Instruments
 	protected function listenMail()
 	{
 		app('events')->listen('mailer.sending', function(Swift_Message $message) {
-			$this->driver->increment('mail.send_count');
+			$this->driver->increment('app.mail_send_count');
 
 			$recipients = [
 				'to' => count($message->getTo()),
@@ -128,7 +128,7 @@ class Instruments
 
 			foreach ($recipients as $recipient => $recipientCount) {
 				if ($recipientCount > 0) {
-					$this->driver->increment('mail.'. $recipient .'_recipient_count', $recipientCount);
+					$this->driver->increment('app.mail_'. $recipient .'_recipient_count', $recipientCount);
 				}
 			}
 		});
@@ -142,19 +142,19 @@ class Instruments
 		$events = app('events');
 
 		$events->listen('auth.attempt', function() {
-			$this->driver->increment('authentication.login_attempt_count');
+			$this->driver->increment('app.login_attempt_count');
 		});
 
 		$events->listen('auth.login', function() {
-			$this->driver->increment('authentication.login_success_count');
+			$this->driver->increment('app.login_success_count');
 		});
 
 		$events->listen('auth.fail', function() {
-			$this->driver->increment('authentication.login_fail_count');
+			$this->driver->increment('app.login_fail_count');
 		});
 
 		$events->listen('auth.logout', function() {
-			$this->driver->increment('authentication.logout_success_count');
+			$this->driver->increment('app.logout_count');
 		});
 	}
 
@@ -166,19 +166,19 @@ class Instruments
 		$events = app('events');
 
 		$events->listen('cache.write', function($key) {
-			$this->driver->increment('cache.write_count');
+			$this->driver->increment('app.cache_write_count');
 		});
 
 		$events->listen('cache.delete', function($key) {
-			$this->driver->increment('cache.delete_count');
+			$this->driver->increment('app.cache_delete_count');
 		});
 
 		$events->listen('cache.hit', function($key) {
-			$this->driver->increment('cache.hit_count');
+			$this->driver->increment('app.cache_hit_count');
 		});
 
 		$events->listen('cache.missed', function($key) {
-			$this->driver->increment('cache.missed_count');
+			$this->driver->increment('app.cache_missed_count');
 		});
 	}
 
@@ -199,7 +199,7 @@ class Instruments
 					'connection' => $connection,
 					'job'        => $this->quotePath(get_class($job)),
 				])
-				->increment('queue.job_success_count');
+				->increment('app.queue_job_success_count');
 		});
 
 		$events->listen('illuminate.queue.failed', function($connection, $job) {
@@ -207,7 +207,7 @@ class Instruments
 					'connection' => $connection,
 					'job'        => $this->quotePath(get_class($job)),
 				])
-				->increment('queue.job_fail_count');
+				->increment('app.queue_job_fail_count');
 		});
 	}
 
@@ -266,12 +266,12 @@ class Instruments
 		$requestTags = $this->getRequestContext($request);
 
 		// Collect response time
-		$response = $this->driver->flashTags($requestTags)->time('response.response_time', $responseBuilder);
+		$response = $this->driver->flashTags($requestTags)->time('app.response_time', $responseBuilder);
 
 		// Collect response code
 		$httpStatus = $response instanceof Response ? $response->getStatusCode() : 200;
 
-		$this->driver->flashTags($requestTags + ['http_status' => $httpStatus])->increment('response.count');
+		$this->driver->flashTags($requestTags + ['http_status' => $httpStatus])->increment('app.response_count');
 
 		$shouldInjectStatsCollector = $response->headers->has('Content-Type')
 			&& strpos($response->headers->get('Content-Type'), 'html') !== false
@@ -291,7 +291,7 @@ class Instruments
 	public function collectRequest(Request $request)
 	{
 		$requestTags = $this->getRequestContext($request);
-		$this->driver->flashTags($requestTags)->increment('request.count');
+		$this->driver->flashTags($requestTags)->increment('app.request_count');
 	}
 
 	/**
@@ -306,12 +306,12 @@ class Instruments
 		// Collect status code
 		$httpStatus = $e instanceof HttpException ? $e->getStatusCode() : 500;
 
-		$this->driver->flashTags($requestTags + ['http_status' => $httpStatus])->increment('response.count');
+		$this->driver->flashTags($requestTags + ['http_status' => $httpStatus])->increment('app.response_count');
 
 		// Collection exception type
 		$exceptionPath   = $this->quotePath(get_class($e));
 
-		$this->driver->flashTags($requestTags + ['exception' => $exceptionPath])->increment('exceptions.count');
+		$this->driver->flashTags($requestTags + ['exception' => $exceptionPath])->increment('app.exceptions_count');
 	}
 
 	/**
@@ -337,7 +337,7 @@ class Instruments
 			}
 
 			$time = ($timing[$event] - $timing['navigationStart']) / 1000;
-			$this->driver->flashTags($requestContext)->timing('response.'. $metric .'_time', $time);
+			$this->driver->flashTags($requestContext)->timing('app.response_'. $metric .'_time', $time);
 		}
 	}
 
