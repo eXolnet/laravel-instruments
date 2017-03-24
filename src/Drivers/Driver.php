@@ -5,6 +5,29 @@ use Closure;
 abstract class Driver
 {
 	/**
+	 * @var array
+	 */
+	protected $options = [];
+
+	/**
+	 * @var array
+	 */
+	protected $tags = [];
+
+	/**
+	 * @var array
+	 */
+	protected $flashTags = [];
+
+	/**
+	 * @param array $options
+	 */
+	public function __construct(array $options = [])
+	{
+		$this->options = $options;
+	}
+
+	/**
 	 * Increment a metric
 	 *
 	 * @param  string|array $metrics
@@ -65,4 +88,89 @@ abstract class Driver
 	 * @return $this
 	 */
 	abstract public function set($metric, $value);
+
+	/**
+	 * @return array
+	 */
+	public function getTags()
+	{
+		return $this->tags;
+	}
+
+	/**
+	 * @param string $tags
+	 * @return $this
+	 */
+	public function setTags($tags)
+	{
+		$this->tags = $tags;
+
+		return $this;
+	}
+
+	/**
+	 * @return $this
+	 */
+	public function clearTags()
+	{
+		$this->tags = [];
+
+		return $this;
+	}
+
+	/**
+	 * @param array $tags
+	 */
+	public function tags(array $tags)
+	{
+		$this->tags = array_merge($this->tags, $tags);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getFlashTags()
+	{
+		return $this->flashTags;
+	}
+
+	/**
+	 * @param string $flashTags
+	 * @return $this
+	 */
+	public function setFlashTags($flashTags)
+	{
+		$this->flashTags = $flashTags;
+
+		return $this;
+	}
+
+	/**
+	 * @return $this
+	 */
+	public function clearFlashTags()
+	{
+		$this->flashTags = [];
+
+		return $this;
+	}
+
+	/**
+	 * @param array $flashTags
+	 * @return $this
+	 */
+	public function flashTags(array $flashTags)
+	{
+		$this->flashTags = array_merge($this->flashTags, $flashTags);
+
+		return $this;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAllTags()
+	{
+		return array_merge($this->tags, $this->flashTags);
+	}
 }

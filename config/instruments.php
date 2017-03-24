@@ -14,6 +14,8 @@ return [
 
 	'application' => null,
 
+	'listeners' => ['http', 'database', 'mail', 'auth', 'cache', 'queue'],
+
 	'statsd' => [
 		'host' => env('STATSD_HOST', '127.0.0.1'),
 
@@ -22,5 +24,7 @@ return [
 		'timeout' => null,
 
 		'throwConnectionExceptions' => env('APP_DEBUG'),
+
+		'stripTagKeys' => true,
 	],
 ];

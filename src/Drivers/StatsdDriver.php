@@ -13,9 +13,12 @@ class StatsdDriver extends Driver
 	 * StatsdStore constructor.
 	 *
 	 * @param \League\StatsD\Client $client
+	 * @param array $options
 	 */
-	public function __construct(Client $client)
+	public function __construct(Client $client, array $options = [])
 	{
+		parent::__construct($options);
+
 		$this->client = $client;
 	}
 
@@ -28,6 +31,46 @@ class StatsdDriver extends Driver
 	}
 
 	/**
+	 * @param string $metric
+	 * @return string
+	 */
+	protected function formatMetric($metric)
+	{
+		$tags = $this->getAllTags();
+
+		if (empty($tags)) {
+			return $metric;
+		}
+
+		$this->clearFlashTags();
+
+		if (array_get($this->options, 'stripTagKeys')) {
+			$flattenTags = implode('.', array_values($tags));
+
+			$dotPosition = strpos($metric, '.') ?: strlen($metric);
+
+			return substr($metric, 0, $dotPosition) .'.'. $flattenTags . substr($metric, $dotPosition);
+		}
+
+		return $metric .','. implode(',', array_map(function ($value, $key) {
+			return $key .'='. $value;
+		}, $tags, array_keys($tags)));
+	}
+
+	/**
+	 * @param array|string $metrics
+	 * @return array|string
+	 */
+	protected function formatMetrics($metrics)
+	{
+		if ( ! is_array($metrics)) {
+			return $this->formatMetric($metrics);
+		}
+
+		return array_map([$this, 'formatMetric'], $metrics);
+	}
+
+	/**
 	 * Increment a metric
 	 *
 	 * @param  string|array $metrics
@@ -37,7 +80,7 @@ class StatsdDriver extends Driver
 	 */
 	public function increment($metrics, $delta = 1, $sampleRate = 1)
 	{
-		$this->client->increment($metrics, $delta, $sampleRate);
+		$this->client->increment($this->formatMetrics($metrics), $delta, $sampleRate);
 
 		return $this;
 	}
@@ -52,7 +95,7 @@ class StatsdDriver extends Driver
 	 */
 	public function decrement($metrics, $delta = 1, $sampleRate = 1)
 	{
-		$this->client->decrement($metrics, $delta, $sampleRate);
+		$this->client->decrement($this->formatMetrics($metrics), $delta, $sampleRate);
 
 		return $this;
 	}
@@ -67,7 +110,7 @@ class StatsdDriver extends Driver
 	public function timing($metric, $time)
 	{
 		// We convert time in seconds because this is what the client requires.
-		$this->client->timing($metric, round(1000 * $time, 4));
+		$this->client->timing($this->formatMetrics($metric), round(1000 * $time, 4));
 
 		return $this;
 	}
@@ -81,7 +124,7 @@ class StatsdDriver extends Driver
 	 */
 	public function gauge($metric, $value)
 	{
-		$this->client->gauge($metric, $value);
+		$this->client->gauge($this->formatMetrics($metric), $value);
 
 		return $this;
 	}
@@ -95,7 +138,7 @@ class StatsdDriver extends Driver
 	 */
 	public function set($metric, $value)
 	{
-		$this->client->set($metric, $value);
+		$this->client->set($this->formatMetrics($metric), $value);
 
 		return $this;
 	}

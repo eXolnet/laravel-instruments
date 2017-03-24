@@ -77,7 +77,15 @@ class LogDriver extends Driver
 	{
 		$metrics = implode(', ', (array)$metrics);
 
-		Log::info('[Instruments] '. $method .' '. $metrics .': '. $value);
+		$tags = $this->getAllTags();
+
+		$flattenTags = implode(',', array_map(function ($value, $key) {
+			return $key .'='. $value;
+		}, $tags, array_keys($tags)));
+
+		$this->clearFlashTags();
+
+		Log::info('[Instruments] '. $method .' '. $metrics .' '. $flattenTags .': '. $value);
 
 		return $this;
 	}

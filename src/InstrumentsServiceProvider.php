@@ -11,10 +11,31 @@ class InstrumentsServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
+		$this->setupConfig();
+		$this->setupRoutes();
+
+		$this->app['instruments']->boot();
+	}
+
+	/**
+	 * @return void
+	 */
+	protected function setupConfig()
+	{
+		$source = realpath(__DIR__ . '/../config/instruments.php');
+
 		$this->publishes([
-			__DIR__.'/../config/instruments.php' => config_path('instruments.php'),
+			$source => config_path('instruments.php')
 		]);
 
+		$this->mergeConfigFrom($source, 'instruments');
+	}
+
+	/**
+	 * @return void
+	 */
+	protected function setupRoutes()
+	{
 		$routeConfig = [
 			'namespace' => 'Exolnet\\Instruments\\Controllers',
 			'prefix' => '_private'
@@ -26,8 +47,6 @@ class InstrumentsServiceProvider extends ServiceProvider
 				'as'   => 'instruments.browser.stats.store',
 			]);
 		});
-
-		$this->app['instruments']->boot();
 	}
 
 	/**

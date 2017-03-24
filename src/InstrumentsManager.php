@@ -45,7 +45,7 @@ class InstrumentsManager extends Manager
 		$client = new Client();
 		$client->configure($options);
 
-		return new StatsdDriver($client);
+		return new StatsdDriver($client, $options);
 	}
 
 	/**
