@@ -356,7 +356,7 @@ class Instruments
 		$requestId      = md5(uniqid());
 		$requestContext = $this->getRequestContext($request);
 
-		Session::set('instruments.request', [
+		Session::put('instruments.request', [
 			'id'      => $requestId,
 			'context' => $requestContext,
 		]);
