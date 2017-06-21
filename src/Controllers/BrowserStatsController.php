@@ -34,13 +34,13 @@ class BrowserStatsController extends Controller
 		$timing    = $request->get('timing');
 
 		if ( ! $requestId || ! is_array($timing)) {
-			throw new NotFoundHttpException;
+			return response()->make('', 404);
 		}
 
 		$sessionRequest = Session::get('instruments.request');
 
 		if ( ! is_array($sessionRequest) || $requestId !== $sessionRequest['id']) {
-			throw new NotFoundHttpException;
+			return response()->make('', 404);
 		}
 
 		Session::remove('instruments.request');

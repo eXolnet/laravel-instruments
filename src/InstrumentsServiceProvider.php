@@ -43,8 +43,9 @@ class InstrumentsServiceProvider extends ServiceProvider
 
 		$this->app['router']->group($routeConfig, function($router) {
 			$router->post('browser/stats', [
-				'uses' => 'BrowserStatsController@store',
-				'as'   => 'instruments.browser.stats.store',
+				'uses'       => 'BrowserStatsController@store',
+				'as'         => 'instruments.browser.stats.store',
+				'middleware' => 'web',
 			]);
 		});
 	}
