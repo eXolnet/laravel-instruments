@@ -11,34 +11,55 @@ This project aim to easily add metric tracking to your Laravel 5 applications. T
 * Queue
 * Cache
 
-## Install - WIP
+## Installation
 
-Via Composer
+Require this package with composer:
 
-```json
-{
-    "require": {
-        "exolnet/laravel-instruments": "WIP"
-    }
-}
+```
+composer require eXolnet/laravel-instruments
 ```
 
-To use the library, you must register the Laravel 5 service provider. Find the `providers` key in your `config/app.php` and register the `Instruments Service Provider`.
+After updating composer, add the ServiceProvider to the providers array in `config/app.php`:
 
-```php
-    'providers' => array(
-        // ...
-        Exolnet\Instruments\InstrumentsServiceProvider::class,
-    )
 ```
+Exolnet\Instruments\InstrumentsServiceProvider::class
+```
+
+Configure the library through your `.env` file:
+
+```
+INSTRUMENTS_DRIVER=statsd
+STATSD_HOST=127.0.0.1
+STATSD_PORT=8125
+```
+
+Or publish the package configuration with the following command:
+
+```
+$ php artisan vendor:publish --provider="Exolnet\Instruments\InstrumentsServiceProvider"
+```
+
 
 ## Testing
 
 To run the phpUnit tests, please use:
 
 ``` bash
-$ vendor/bin/phpunit -c phpunix.xml
+$ composer test
 ```
+
+## Contributing
+
+Please see [CONTRIBUTING](CONTRIBUTING.md) and [CODE OF CONDUCT](CODE_OF_CONDUCT.md) for details.
+
+## Security
+
+If you discover any security related issues, please email security@exolnet.com instead of using the issue tracker.
+
+## Credits
+
+- [Alexandre D'Eschambeault](https://github.com/xel1045)
+- [All Contributors](../../contributors)
 
 ## License
 
