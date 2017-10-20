@@ -1,5 +1,9 @@
 # Laravel Instruments
 
+[![Latest Stable Version](https://poser.pugx.org/eXolnet/laravel-instruments/v/stable?format=flat-square)](https://packagist.org/packages/eXolnet/laravel-instruments)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
+[![Total Downloads](https://img.shields.io/packagist/dt/eXolnet/laravel-instruments.svg?style=flat-square)](https://packagist.org/packages/eXolnet/laravel-instruments)
+
 This project aim to easily add metric tracking to your Laravel 5 applications. Three drivers are currently supported: StatsD, Log and Null. The following metrics are currently tracked:
 
 * Request
