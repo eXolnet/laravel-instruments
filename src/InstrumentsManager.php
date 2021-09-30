@@ -1,4 +1,6 @@
-<?php namespace Exolnet\Instruments;
+<?php
+
+namespace Exolnet\Instruments;
 
 use Exolnet\Instruments\Drivers\LogDriver;
 use Exolnet\Instruments\Drivers\NullDriver;
@@ -10,42 +12,42 @@ use League\StatsD\Client;
 
 class InstrumentsManager extends Manager
 {
-	/**
-	 * Get the default driver name.
-	 *
-	 * @return string
-	 */
-	public function getDefaultDriver()
-	{
-		return $this->app['config']['instruments.driver'];
-	}
+    /**
+     * Get the default driver name.
+     *
+     * @return string
+     */
+    public function getDefaultDriver()
+    {
+        return $this->app['config']['instruments.driver'];
+    }
 
-	/**
-	 * @return \Exolnet\Instruments\Drivers\StatsdDriver
-	 */
-	protected function createStatsdDriver()
-	{
-		$options = config('instruments.statsd');
+    /**
+     * @return \Exolnet\Instruments\Drivers\StatsdDriver
+     */
+    protected function createStatsdDriver()
+    {
+        $options = config('instruments.statsd');
 
-		$client = new Client();
-		$client->configure($options);
+        $client = new Client();
+        $client->configure($options);
 
-		return new StatsdDriver($client, $options);
-	}
+        return new StatsdDriver($client, $options);
+    }
 
-	/**
-	 * @return \Exolnet\Instruments\Drivers\LogDriver
-	 */
-	protected function createLogDriver()
-	{
-		return new LogDriver();
-	}
+    /**
+     * @return \Exolnet\Instruments\Drivers\LogDriver
+     */
+    protected function createLogDriver()
+    {
+        return new LogDriver();
+    }
 
-	/**
-	 * @return \Exolnet\Instruments\Drivers\NullDriver
-	 */
-	protected function createNullDriver()
-	{
-		return new NullDriver();
-	}
+    /**
+     * @return \Exolnet\Instruments\Drivers\NullDriver
+     */
+    protected function createNullDriver()
+    {
+        return new NullDriver();
+    }
 }

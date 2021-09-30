@@ -1,4 +1,6 @@
-<?php namespace Exolnet\Instruments\Controllers;
+<?php
+
+namespace Exolnet\Instruments\Controllers;
 
 use Cache;
 use Exolnet\Instruments\Instruments;
@@ -9,44 +11,44 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class BrowserStatsController extends Controller
 {
-	/**
-	 * @var \Exolnet\Instruments\Instruments
-	 */
-	private $instruments;
+    /**
+     * @var \Exolnet\Instruments\Instruments
+     */
+    private $instruments;
 
-	/**
-	 * BrowserStatsController constructor.
-	 *
-	 * @param \Exolnet\Instruments\Instruments $instruments
-	 */
-	public function __construct(Instruments $instruments)
-	{
-		$this->instruments = $instruments;
-	}
+    /**
+     * BrowserStatsController constructor.
+     *
+     * @param \Exolnet\Instruments\Instruments $instruments
+     */
+    public function __construct(Instruments $instruments)
+    {
+        $this->instruments = $instruments;
+    }
 
-	/**
-	 * @param \Illuminate\Http\Request $request
-	 * @return \Illuminate\Http\Response
-	 */
-	public function store(Request $request)
-	{
-		$requestId = $request->get('requestId');
-		$timing    = $request->get('timing');
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $requestId = $request->get('requestId');
+        $timing    = $request->get('timing');
 
-		if ( ! $requestId || ! is_array($timing)) {
-			return response()->make('', 404);
-		}
+        if (! $requestId || ! is_array($timing)) {
+            return response()->make('', 404);
+        }
 
-		$sessionRequest = Session::get('instruments.request');
+        $sessionRequest = Session::get('instruments.request');
 
-		if ( ! is_array($sessionRequest) || $requestId !== $sessionRequest['id']) {
-			return response()->make('', 404);
-		}
+        if (! is_array($sessionRequest) || $requestId !== $sessionRequest['id']) {
+            return response()->make('', 404);
+        }
 
-		Session::remove('instruments.request');
+        Session::remove('instruments.request');
 
-		$this->instruments->collectBrowserStats($sessionRequest['context'], $timing);
+        $this->instruments->collectBrowserStats($sessionRequest['context'], $timing);
 
-		return response()->make();
-	}
+        return response()->make();
+    }
 }

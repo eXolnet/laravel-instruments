@@ -1,4 +1,6 @@
-<?php namespace Exolnet\Instruments\Tests;
+<?php
+
+namespace Exolnet\Instruments\Tests;
 
 use Mockery;
 use PHPUnit\Framework\TestCase;
