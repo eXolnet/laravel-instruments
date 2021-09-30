@@ -20,8 +20,10 @@ class StatsdDriverTest extends UnitTest
 	/**
 	 * @return void
 	 */
-	public function setUp()
+	public function setUp(): void
 	{
+		parent::setUp();
+
 		$this->client = m::mock(Client::class);
 
 		$this->driver = new StatsdDriver($this->client);
