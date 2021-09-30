@@ -1,4 +1,6 @@
-<?php namespace Exolnet\Instruments\Tests\Unit;
+<?php
+
+namespace Exolnet\Instruments\Tests\Unit;
 
 use Exolnet\Instruments\Drivers\StatsdDriver;
 use Exolnet\Instruments\Tests\UnitTest;
@@ -7,31 +9,33 @@ use Mockery as m;
 
 class StatsdDriverTest extends UnitTest
 {
-	/**
-	 * @var \Mockery\MockInterface|\League\StatsD\Client
-	 */
-	protected $client;
+    /**
+     * @var \Mockery\MockInterface|\League\StatsD\Client
+     */
+    protected $client;
 
-	/**
-	 * @var \Mockery\MockInterface|\Exolnet\Instruments\Drivers\Driver
-	 */
-	protected $driver;
+    /**
+     * @var \Mockery\MockInterface|\Exolnet\Instruments\Drivers\Driver
+     */
+    protected $driver;
 
-	/**
-	 * @return void
-	 */
-	public function setUp()
-	{
-		$this->client = m::mock(Client::class);
+    /**
+     * @return void
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
 
-		$this->driver = new StatsdDriver($this->client);
-	}
+        $this->client = m::mock(Client::class);
 
-	/**
-	 * @return void
-	 */
-	public function testFeatureIsInstantiable()
-	{
-		$this->assertInstanceOf(StatsdDriver::class, $this->driver);
-	}
+        $this->driver = new StatsdDriver($this->client);
+    }
+
+    /**
+     * @return void
+     */
+    public function testFeatureIsInstantiable()
+    {
+        $this->assertInstanceOf(StatsdDriver::class, $this->driver);
+    }
 }
