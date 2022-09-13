@@ -33,7 +33,7 @@
 	},
 	"scripts": {
 		"lint": "vendor/bin/phpcs -p -s --standard=ruleset.xml",
-		"lint-fix": "vendor/bin/phpcbf -p --standard=ruleset.xml",
+		"lint:fix": "vendor/bin/phpcbf -p --standard=ruleset.xml",
 		"test": "vendor/bin/phpunit"
 	}
 }
