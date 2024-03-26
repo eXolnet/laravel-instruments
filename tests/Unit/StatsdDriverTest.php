@@ -3,11 +3,11 @@
 namespace Exolnet\Instruments\Tests\Unit;
 
 use Exolnet\Instruments\Drivers\StatsdDriver;
-use Exolnet\Instruments\Tests\UnitTest;
+use Exolnet\Instruments\Tests\TestCase;
 use League\StatsD\Client;
 use Mockery as m;
 
-class StatsdDriverTest extends UnitTest
+class StatsdDriverTest extends TestCase
 {
     /**
      * @var \Mockery\MockInterface|\League\StatsD\Client
