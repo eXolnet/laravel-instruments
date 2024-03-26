@@ -3,9 +3,9 @@
 namespace Exolnet\Instruments\Tests;
 
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as BaseTestCase;
 
-abstract class UnitTest extends TestCase
+abstract class TestCase extends BaseTestCase
 {
     public function tearDown(): void
     {
